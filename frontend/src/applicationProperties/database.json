@@ -1,0 +1,7 @@
+
+{
+    "development":{
+        "localserver":"http://localhost:8085",
+        "apiVersion":"1"
+    }
+}
