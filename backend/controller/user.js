@@ -1,11 +1,12 @@
-const UserModelUrl = require("../models/userModel");
+const { mongo } = require("mongoose");
+const { UserModelUrl, StudentModel } = require("../models/userModel");
 const { setUser, getUser } = require("../services/userServices");
 
 
 async function handelUserCreation(req, res) {
 
     console.log("body-->", req.body);
-    const { UserName, UserEmail, UserMobile, UserPassword } = req.body;
+    const { UserName, UserEmail, UserMobile, UserPassword, UserRole } = req.body;
 
 
     if (!req.body || !UserName || !UserEmail || !UserMobile || !UserPassword) return res.status(400).json({ msg: "Please Provide All Required Fields" });
@@ -16,7 +17,8 @@ async function handelUserCreation(req, res) {
             UserName: UserName,
             UserEmail: UserEmail,
             UserMobile: UserMobile,
-            UserPassword: UserPassword
+            UserPassword: UserPassword,
+            UserRole: UserRole
         });
 
         res.send({
@@ -54,7 +56,7 @@ async function handelUserLogin(req, res) {
         }
 
         const token = setUser(logInUser.toObject());
-        res.cookie('SessionToken', token);
+        //  res.cookie('SessionToken', token);
         return res.status(200).json({
             msg: "Success",
             token: token,
@@ -71,14 +73,20 @@ async function handelUserLogin(req, res) {
 async function checkAuth(req, res) {
 
     try {
-        const userSession = req.cookies.SessionToken;
-        console.log("Session token-->", userSession);
+        // const userSession = req.cookies.SessionToken;
+
+        const userSession = req.headers["authorization"];
+        console.log("Authorization header-->", userSession);
+
+        const BearerToken = userSession.split('Bearer ')[1]?.trim();
+
+        console.log("Bearertoken-->", BearerToken);
 
         if (!userSession) {
             return res.status(400).json({ msg: "Not Authenticate" })
         }
 
-        const authUser = getUser(userSession);
+        const authUser = getUser(BearerToken);
         console.log("Auth User-->", authUser);
         if (!authUser) {
             return res.status(400).json({ msg: "User Not Found" });
@@ -95,7 +103,6 @@ async function checkAuth(req, res) {
 
 
 }
-
 
 async function logoutUser(req, res) {
 
@@ -119,4 +126,75 @@ async function logoutUser(req, res) {
 }
 
 
-module.exports = { handelUserCreation, handelUserLogin, checkAuth, logoutUser };
+async function CreateStudent(req, res) {
+
+    const { StudentName, token } = req.body;
+    const loginDetials = getUser(token);
+    console.log("login details-->", loginDetials);
+
+    if (!StudentName) {
+        return res.status(400).json({ msg: "Student Name INvalid" });
+    }
+
+    try {
+
+        const student = await StudentModel.create({
+            StudentName: StudentName,
+            createdBy: loginDetials.UserEmail
+        });
+
+        res.send({
+            msg: "Student Create Successfuly",
+            studentid: student._id,
+            code: 200
+        })
+
+    } catch (error) {
+        console.log("Error-->", error);
+
+    }
+
+}
+
+
+async function getAllStudent(req, res) {
+
+    // console.log("student Req -->", req);
+    const token = req.headers["authorization"].split("Bearer ")[1].trim();
+    console.log("token-->", token);
+    const tokenDetails = getUser(token);
+    console.log("tokenDetails-->", tokenDetails);
+    const userEmail = tokenDetails.UserEmail;
+    try {
+
+
+        if (tokenDetails.UserRole == "Admin") {
+            const students = await StudentModel.find({});
+            return res.send({
+                msg: "Success",
+                StudentList: students,
+                code: 200
+            })
+
+        }
+        else {
+            const students = await StudentModel.find({ createdBy: userEmail });
+            return res.send({
+                msg: "Success",
+                StudentList: students,
+                code: 200
+            })
+        }
+    }
+    catch (error) {
+        console.log("Error-->", error);
+    }
+
+
+}
+
+
+
+
+
+module.exports = { handelUserCreation, handelUserLogin, checkAuth, logoutUser, CreateStudent, getAllStudent };

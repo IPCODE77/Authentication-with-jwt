@@ -3,28 +3,34 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Singup } from "./component/userLoginSignUp/signup";
 import { LoginForm } from "./component/userLoginSignUp/login";
 import { HomePage } from "./component/HomePage/home";
-import { Appcontext, Appprovider } from "../src/GlobalStates/userGlobalStates";
+import { Appcontext, Appprovider } from "../src/component/globalVariables/AuthContext";
+import { ProtectedRoutes } from "../src/component/AuthCheck/protectedRoute";
 
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Singup />
+    element: <Singup />, // Signup page does not need protection
   },
   {
     path: '/login',
-    element: <LoginForm />
+    element: <LoginForm />, // Login page does not need protection
   },
   {
     path: '/home',
-    element: <HomePage />
-  }
-])
+    element: (
+      <ProtectedRoutes>
+        <HomePage /> {/* Home page is protected */}
+      </ProtectedRoutes>
+    ),
+  },
+]);
+
 
 function App() {
   return (
     <Appprovider>
-      <RouterProvider router={router}/>
+      <RouterProvider router={router} />
     </Appprovider>
   );
 }

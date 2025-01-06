@@ -3,8 +3,8 @@ import { useContext, useState } from "react"
 import { SingUpParentDiv,SubmitButton, FormWrapper, Title, ItemDiv, InputField, LabelName } from "./signup"
 import axios from "axios";
 import backendUrl from "../../applicationProperties/database.json";
-import { useLocation, useNavigate } from "react-router";
-import { Appcontext,Appprovider } from "../../GlobalStates/userGlobalStates";
+import { Navigate, useLocation, useNavigate } from "react-router";
+import { Appcontext,Appprovider } from "../globalVariables/AuthContext";
 
 
 
@@ -16,6 +16,7 @@ export const LoginForm = () => {
         loginPsw: ''});
     const navigate = useNavigate();  
     const {user,setUser} = useContext(Appcontext);
+    const {token,setToken} = useContext(Appcontext);
     
     const handelLoginButton = () =>{
         const newObject = {
@@ -34,6 +35,8 @@ export const LoginForm = () => {
              if(getLogInInfo.data.msg == "Success"){
 
                 setUser(getLogInInfo.data.authUser);
+                localStorage.setItem("token",getLogInInfo.data.token);
+                setToken(getLogInInfo.data.token);
                 navigate("/home")
              }
          }
@@ -41,6 +44,10 @@ export const LoginForm = () => {
             console.log("Error-->",error);
          }
 
+    }
+
+    if(user){
+        return <Navigate  to="/home" replace />
     }
     return (
         <>

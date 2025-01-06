@@ -1,36 +1,56 @@
 import React, { createContext, useState, useEffect } from 'react';
 import backendUrl from "../../applicationProperties/database.json";
 import axios from 'axios';
+import { useNavigate } from 'react-router';
 
-export const AuthContext = createContext();
+export const Appcontext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const Appprovider = ({ children }) => {
     const [user, setUser] = useState(null); 
-    const [loading,setloading] = useState(true);
+    const [loading, setLoading] = useState(true);
+    const [token, setToken] = useState(localStorage.getItem('token') || null);
 
     useEffect(() => {
         const checkAuth = async () => {
             const url = `${backendUrl.development.localserver}/user/check-auth`;
-            console.log("Checking auth...");
+            console.log("Checking auth...", token);
+            if (!token) {
+                setLoading(false);
+                return;
+            }
             try {
-                const response = await axios.get(url, { withCredentials: true });
+                const response = await axios.get(url, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
                 console.log("Auth response:", response);
                 if (response.status === 200) {
-                    setUser(response.data.user);
+                    setUser(response.data.authUser);
                 }
             } catch (error) {
                 console.log('Not authenticated in AuthContext:', error);
-                setUser(null); // Ensure user is set to null if auth fails
-                setloading(false);
-            } 
+                setUser(null); 
+            } finally {
+                setLoading(false);
+            }
         };
 
         checkAuth();
+    }, [token]); // Re-run when `token` changes.
+
+    // Listen for localStorage changes (e.g., from login)
+    useEffect(() => {
+        const syncToken = () => {
+            const storedToken = localStorage.getItem('token');
+            setToken(storedToken);
+        };
+
+        window.addEventListener('storage', syncToken);
+        return () => window.removeEventListener('storage', syncToken);
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, setUser, loading }}>
+        <Appcontext.Provider value={{ user, setUser, loading, token, setToken }}>
             {children}
-        </AuthContext.Provider>
+        </Appcontext.Provider>
     );
 };

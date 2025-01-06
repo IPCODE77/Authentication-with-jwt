@@ -10,6 +10,7 @@ function setUser(user){
          UserName: user.UserName,
          UserEmail: user.UserEmail,
          UserMobile: user.UserMobile,
+         UserRole:user.UserRole
      };
      return jwt.sign(payload,secretKey,{expiresIn:"1h"});
 }

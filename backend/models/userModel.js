@@ -1,5 +1,6 @@
 
 const mongo = require("mongoose");
+const { type } = require("os");
 
 const UserModel = mongo.Schema({
     UserName:{
@@ -16,6 +17,9 @@ const UserModel = mongo.Schema({
         required:true,
         unique:true
     },
+    UserRole :{
+        type:String
+    },
     UserPassword:{
             type:String,
             required:true
@@ -25,4 +29,18 @@ const UserModel = mongo.Schema({
 
 const UserModelUrl = mongo.model("UserDetails",UserModel);
 
-module.exports = UserModelUrl;
+
+
+const Student = mongo.Schema({
+    StudentName :{
+        type:String
+    },
+    createdBy:{
+        type:String
+    }
+});
+
+
+const StudentModel = mongo.model("StudentDetails",Student);
+
+module.exports = {UserModelUrl,StudentModel};

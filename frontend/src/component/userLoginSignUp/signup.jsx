@@ -1,8 +1,9 @@
-import { use, useState } from "react";
+import { use, useContext, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import backendUrl from "../../applicationProperties/database.json";
-import { data, useNavigate } from "react-router";
+import { data, Navigate, useNavigate } from "react-router";
+import { Appcontext } from "../globalVariables/AuthContext";
 
 export const SingUpParentDiv = styled.div`
   display: flex;
@@ -88,15 +89,18 @@ const LocationButton = styled.button`
 
 export const Singup = () => {
   const navigate = useNavigate();
+  const {user} = useContext(Appcontext);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [roles,setroles] = useState('');
   const [signUpObject, setSignUpObject] = useState({
     userName: '',
     userEmail: '',
     userMobile: '',
     userPassword: '',
+    userRole: ''
   });
 
   const handleSignUpButton = () => {
@@ -105,6 +109,7 @@ export const Singup = () => {
       UserEmail: email,
       UserMobile: mobile,
       UserPassword: password,
+      UserRole : roles
     };
 
     setSignUpObject(updatedSignUpObject);
@@ -142,6 +147,11 @@ export const Singup = () => {
     setEmail('');
     setMobile('');
     setPassword('');
+    setroles('');
+  }
+
+  if(user){
+    return <Navigate to="/home" replace />
   }
 
   return (
@@ -172,6 +182,15 @@ export const Singup = () => {
             placeholder="Enter Mobile Number..."
             value={mobile}
             onInput={(e) => setMobile(e.target.value)}
+          />
+        </ItemDiv>
+        <ItemDiv>
+          <LabelName>Roles</LabelName>
+          <InputField
+            type="tel"
+            placeholder="Enter Roles..."
+            value={roles}
+            onInput={(e) => setroles(e.target.value)}
           />
         </ItemDiv>
         <ItemDiv>
